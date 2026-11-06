@@ -1,0 +1,19 @@
+.page { position:fixed; inset:0; overflow-y:auto; display:grid; place-items:center; padding:32px 20px; background:#fff; color:#252528; color-scheme:light; font-family:"Segoe UI",sans-serif; }
+.message { width:min(480px,100%); text-align:center; margin-top:0; }
+.illustration { width:112px; height:112px; margin:0 auto 32px; background:#fce9da; border-radius:50%; position:relative; display:grid; place-items:center; color:#fb7e24; }
+.illustration.expired > svg { color:#d60000; }
+.sparkOne,.sparkTwo,.sparkThree { position:absolute; color:#ff965e; }
+.sparkOne { left:-3px; top:4px; font-size:16px; }
+.sparkTwo { right:-5px; top:2px; font-size:23px; }
+.sparkThree { left:4px; bottom:-1px; font-size:27px; }
+.illustration i,.illustration b { position:absolute; width:4px; height:4px; background:#ffad85; border-radius:50%; top:5px; left:16px; }
+.illustration b { width:3px; height:3px; left:auto; top:auto; right:3px; bottom:18px; }
+.message h1 { font-size:20px; line-height:1.5; font-weight:600; margin:0 0 2px; }
+.description { color:#69696e; font-size:18px; line-height:1.5; }
+.schedule { margin-top:20px; display:flex; align-items:center; gap:16px; padding:14px 16px; border:1px solid #dedee1; border-radius:12px; background:#f7f7f9; text-align:left; min-height:72px; }
+.scheduleIcon { color:#f78026; flex-shrink:0; display:flex; }
+.schedule h2 { font-size:14px; line-height:1.5; font-weight:500; }
+.schedule p { display:flex; align-items:center; gap:5px; font-size:12px; line-height:1.5; color:#6e6e73; margin-top:4px; }
+.returnNote { color:#747479; font-size:14px; margin-top:20px; line-height:1.6; }
+.message a { display:inline-block; margin-top:20px; color:#c26420; }
+@media(max-width:600px) { .message h1 { font-size:19px; } .description { font-size:16px; } }
