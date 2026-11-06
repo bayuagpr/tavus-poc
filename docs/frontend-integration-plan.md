@@ -146,3 +146,7 @@ Implement Plan 2: the `useTutorSession` controller and media boundary. Plan 1
 is complete; do not extend the API layer with screen-specific behavior. Keep
 duplicate-request prevention, stale-response handling, and cross-request retry
 limits in the controller rather than in the reusable mutation hooks.
+
+## Booking-layer follow-up
+
+Implemented current-booking/availability reads, cancellation client and React Query hooks, MSW read/cancellation scenarios, and shared screen/mock fixture metadata. See `frontend-api-and-mocks.md`. These hooks are still not mounted by screens. Next: the session controller and mock media boundary, followed by screen mutation wiring.

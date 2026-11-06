@@ -4,6 +4,24 @@ A React proof of concept for a face-to-face AI learning session using Tavus Conv
 
 The UI is adapted from the [Tavus haircheck and conversation example](https://github.com/Tavus-Engineering/tavus-examples/tree/main/examples/cvi-ui-haircheck-conversation). Tavus UI components and hooks are copied into this project and customized locally.
 
+## Session route previews
+
+The dedicated session route is `/sessions/:bookingId`. For now, only `sample-booking` is a local fixture; other IDs show a not-found state. No backend session is created.
+
+- `/sessions/sample-booking`: schedule-based entry (20 March 2027, 1:00–1:10 PM SGT).
+- `/sessions/sample-booking?state=scheduled`: preview the before-session screen.
+- `/sessions/sample-booking?state=expired` or `?state=completed`: preview the unavailable screen.
+- `/sessions/sample-booking?state=ready`: device check, followed by the demo conversation on Join.
+
+State overrides are local visual-preview tools, not authorization checks. Live booking validation and backend/API hook integration remain pending. Leaving the sample conversation shows its ended state for the current visit.
+
+## App routes
+
+- `/`: sample Ask Loka session dashboard with Scheduled and Completed tabs. Uses local fixture data; cancellation does not call the backend.
+- `/?sessionPreview=join`: sample dashboard with the details modal Join action enabled. Open View Details to inspect this state.
+- `/welcome`: original conversation URL entry, device check, and live join flow.
+- `/?demo`: conversation layout preview without a live session.
+
 ## Start here
 
 1. Install dependencies and start the app using [Run locally](#run-locally).
@@ -127,6 +145,35 @@ Plan 1 is complete: a typed Tutor API client, reusable React Query hooks, determ
 
 Next, build the Plan 2 session controller and a separate mock media adapter before connecting live APIs. See the [frontend integration plan](docs/frontend-integration-plan.md) for scope and validation scenarios, and [Tutor API client, hooks, and mocks](docs/frontend-api-and-mocks.md) for configuration, auth, retry semantics, and future wiring. MSW is installed as a dev dependency; browser mock startup is opt-in and `main.tsx` is unchanged.
 
+## Live and demo conversation screens
+
+Live and demo calls render the **same `Conversation` component** in `src/components/cvi/components/conversation/index.tsx`. There is no separate demo screen to maintain. Changes to the layout, toolbar, sidebar, captions presentation, camera-off placeholders, tooltips, and session dialogs apply to both modes.
+
+```tsx
+// Live: joins the supplied Daily/Tavus room.
+<Conversation conversationUrl={url} onLeave={handleLeave} />
+
+// Demo: skips the remote room join.
+<Conversation demo conversationUrl="" onLeave={handleLeave} />
+```
+
+| Behavior | Live mode | Demo mode |
+| --- | --- | --- |
+| Main video | Real Tavus replica stream | Labeled replica placeholder |
+| Local camera/mic | Real devices with browser permissions | Optional real devices with browser permissions |
+| Captions | Tavus streaming utterance events | Sample caption text |
+| Participant/speaking data | Daily participants and active speaker | Sample participant information |
+| Session timer | Elapsed time since the local call joined | `00:00` |
+| Media controls and layout | Shared component | Shared component |
+| Leave confirmation and error dialogs | Shared dialogs with live retry behavior | Shared dialogs with local preview behavior |
+| Backend session termination | Not connected to this screen yet | No backend conversation is created |
+
+The existing live entry is `/welcome`: paste an active room URL, check devices, then join. The dedicated sample route `/sessions/sample-ready-booking` runs the device check and then opens the demo conversation. `/?demo` opens the demo conversation directly.
+
+For dialog previews, use `/?demo&dialog=leave`, `/?demo&dialog=connection`, or `/?demo&dialog=microphone`. These previews do not simulate a real provider connection failure.
+
+**Development rule:** change the shared component and its CSS Module for visual updates. Keep only provider joining, live media/events, and sample data conditional on `demo`. Verify changes in both modes; a successful demo does not verify remote audio/video, live caption delivery, or backend session lifecycle.
+
 ## Development
 
 | Command | Purpose |
@@ -212,3 +259,25 @@ Demo mode verifies layout and local media controls. It does not verify backend s
 - **No camera or microphone:** Check browser and operating-system permissions and select an available device.
 - **No captions:** Enable the CC control and verify that the live session emits streaming utterance events.
 - **Screen sharing stops:** Re-select a screen, window, or tab through the browser's sharing prompt. Ending sharing restores the regular layout.
+
+### Post-session feedback previews
+
+Confirmed Leave disconnects Daily, returns to `/`, and opens the Ended Early feedback modal. Feedback currently stays in local UI state; the API hooks are not wired to this form. Backend termination remains separate.
+
+- `/?sessionOutcome=early&duration=120`: early exit.
+- `/?sessionOutcome=completed&duration=600`: completed-session preview.
+- `/?sessionOutcome=interrupted`: interrupted-session preview; no incident reference is fabricated.
+
+Completed and interrupted previews are not yet triggered automatically by backend lifecycle events. Rating is required; written feedback is optional (maximum 2000 characters).
+
+### Session list empty states
+
+Use `/?empty=scheduled`, `/?empty=completed` (select Completed), or `/?empty=all` to preview the list empty states. Scheduled also becomes empty after both sample bookings are cancelled. Tab counts reflect the displayed local data.
+
+## Mock-backed session integration
+
+In development, open `/sessions/sample-ready-booking?mock=1` (linked from the second scheduled card). MSW starts before rendering. Device check → Join calls mocked start → mock media opens the shared demo conversation → confirmed Leave calls mocked end → homepage feedback calls mocked submit. Success toast follows the successful response. In-app navigation preserves the mock store across the homepage transition.
+
+Mock media never joins synthetic Daily URLs. `?mock=1` is development-only. Existing `/welcome` live calls and `/?demo` visual previews remain separate. Real session-route authentication/media integration, automatic lifecycle outcomes, and dashboard read/cancellation wiring remain pending.
+
+Reloading resets the mock store. Feedback after reload can return SESSION_NOT_ENDED. Preview query parameters are not authorization checks.

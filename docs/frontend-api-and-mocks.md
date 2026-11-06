@@ -1,8 +1,7 @@
 # Tutor API client, React Query hooks, and MSW mocks
 
 Status: implemented (Plan 1). Screens, the session controller, and media
-integration remain out of scope. Nothing in this document is mounted by
-`src/main.tsx` or `src/App.tsx` yet.
+integration remain out of scope. Providers and opt-in development MSW are now mounted for the mock session flow; see Current wiring below.
 
 Contract source: [SSE Service OpenAPI](https://api.dev.adroit-lms.com/doc/sse-service/v3/api-docs),
 reviewed 2026-11-06. The service does **not** expose a GET endpoint for a
@@ -196,7 +195,7 @@ VITE_SSE_API_BASE_URL=https://sse.mock.invalid
 ```
 
 `startTutorMocks()` awaits service-worker registration, bypasses unhandled
-requests, and intercepts only the three exact tutor paths. It does not touch
+requests, and intercepts only the supported tutor paths. It does not touch
 Daily/Tavus provider or media traffic. `stopTutorMocks()` is available for
 teardown.
 
@@ -222,7 +221,7 @@ tutorMockStore.snapshot(); // scenario + attempts + ended/submitted state
 Feedback success requires an ended session. Call the end endpoint first, or use
 `store.markEnded()` in a focused test. A reset starts active and unrated.
 
-Fixtures use a fixed default clock (`2027-03-05T02:00:00.000Z`), a ten-minute
+Fixtures use a fixed default clock (`2027-03-20T05:00:00.000Z`), a ten-minute
 window, a synthetic meeting token, and a `mock-media.invalid` URL. That URL is
 not a Daily room and must never be joined. No fake Daily joins are attempted.
 
@@ -268,3 +267,29 @@ npm run build      # TypeScript project build + Vite production bundle
   mounted).
 - Full OpenAPI schema validation and automatic token refresh (the host owns
   refresh through the provider).
+
+## Booking reads and cancellation (follow-up)
+
+Implemented without mounting providers or connecting screens:
+
+- `client.getCurrentBooking(month, { signal })`: GET current monthly booking; 404 means `null`, other errors remain errors.
+- `client.getAvailability(month, { signal })`: GET monthly availability, normalized to an array. The published schema shows a singleton while its description says list; both shapes are accepted and malformed rows rejected.
+- `client.cancelBooking(bookingId, { signal })`: DELETE booking; no automatic retry.
+- `useCurrentTutorBooking(month, { client?, enabled? })` and `useTutorAvailability(month, options)` use cancellable React Query reads with retries disabled.
+- `useCancelTutorBooking({ client? })` updates the returned booking's monthly cache and invalidates availability. A cancelled booking remains the monthly entitlement record.
+
+Use a fresh QueryClient per authenticated tenant/user session and clear it on identity changes; keys are scoped by month/booking within that client, not globally by authenticated identity.
+
+MSW adds `booking`: success/empty/unavailable/network-error; `availability`: success/empty/unavailable; `cancel`: success/cutoff/not-found/unavailable. The injected store clock enforces the 24-hour cancellation cutoff (exactly 24 hours is allowed). Set the clock to before the cutoff for cancellation-success tests. Reset clears cancellation state. Existing lifecycle scenarios remain available.
+
+Shared synthetic fixture: `src/fixtures/tutor.ts`. Screen date metadata and MSW defaults now use 20 March 2027, 05:00–05:10 UTC (1:00–1:10 PM SGT). The second ready card is a visual scenario override, not a second real monthly entitlement. Explicit session fixture clock overrides remain supported. Do not compare the fixed mock clock to the real wall clock to infer eligibility.
+
+No learner-history endpoint or GET session-by-ID endpoint is invented. Completed history remains local sample data. Calendar graphics and labels are presentation; future integration must format API dates dynamically. Backend enrollment/auth checks remain authoritative.
+
+## Current wiring
+
+The dedicated ready route uses `useTutorSession` when `?mock=1` is present in development (or VITE_ENABLE_TUTOR_MOCKS=true). main.tsx awaits MSW then mounts QueryClientProvider and TutorApiProvider. The controller handles duplicate joins, stale preparation responses, mock-media joining, local disconnect, and backend end with manual recovery. It does not yet consume real provider lifecycle events.
+
+Confirmed Leave waits for mocked end success, then navigates in-app to homepage feedback carrying booking ID and duration. Feedback submits actual rating/comments through useSubmitTutorFeedback. Failure retains the form; success closes it and shows the toast. Early leave currently maps to COMPLETED plus an early-exit description; final product/backend mapping needs agreement.
+
+No real backend authentication or media adapter is connected to the dedicated session route. No timeout enforcement or automatic completed/interrupted transition is implemented. Dashboard reads/cancellation are still local UI behavior. Other opt-in bootstrap and deferred notes above describe the API layer before this wiring and should be read with this section.
