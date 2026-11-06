@@ -25,6 +25,8 @@ Versions below describe the dependency ranges in `package.json`; `package-lock.j
 | Daily React | `^0.22.0` | React provider, video/audio components, and hooks for Daily call state |
 | Tavus CVI UI | Generated source | Starting components and event hooks copied into `src/components/cvi/` and customized here |
 | CSS Modules | `*.module.css` | Component-scoped styling; `src/index.css` supplies global defaults |
+| TanStack Query | v5 | Mutation state, scoped cache keys, and retry defaults for Tutor API calls |
+| MSW + Vitest | MSW 2 / Vitest 5 | Opt-in HTTP mocks plus API and hook tests; not mounted in the app |
 | ESLint | 9 | Static checks, including React hook rules |
 
 **Tavus and Daily have different jobs:** Tavus runs the conversational AI and provides the replica stream and conversation events. Daily carries the real-time media and exposes browser call controls. This repository owns the React interface around them.
@@ -49,7 +51,7 @@ main.tsx
 - **Captions:** `cvi-events-hooks.tsx` listens for Daily app messages. `use-closed-caption.tsx` consumes Tavus `conversation.utterance.streaming` events. The caption component displays the latest two visual lines and clears a final caption after a short delay.
 - **Leaving:** The leave control calls Daily's `leave()` and returns to the URL form. Backend session termination is a separate integration step.
 
-The active entry flow does not call the API helpers under `src/api/`. Session creation must happen outside this frontend. Generated chat files remain in the repository but are not mounted in the conversation screen.
+The active entry flow does not call the API helpers under `src/api/` or the Tutor client and hooks added in Plan 1. Session creation, screen wiring, and media integration remain outside this phase. Generated chat files remain in the repository but are not mounted in the conversation screen.
 
 ## Features
 
@@ -119,6 +121,12 @@ Open http://localhost:5173/?demo or select **Preview conversation UI (demo)** on
 
 Demo mode shows a replica placeholder and sample captions. You can optionally enable your real camera and microphone to try the local preview and controls. It does not create a Tavus session or produce AI responses. The demo timer remains at `00:00`.
 
+## Integration roadmap
+
+Plan 1 is complete: a typed Tutor API client, reusable React Query hooks, deterministic MSW scenarios, and tests exist under `src/api/tutor.ts`, `src/hooks/tutor/`, and `src/mocks/`. None of it is mounted by the current screens, which still use local fixtures.
+
+Next, build the Plan 2 session controller and a separate mock media adapter before connecting live APIs. See the [frontend integration plan](docs/frontend-integration-plan.md) for scope and validation scenarios, and [Tutor API client, hooks, and mocks](docs/frontend-api-and-mocks.md) for configuration, auth, retry semantics, and future wiring. MSW is installed as a dev dependency; browser mock startup is opt-in and `main.tsx` is unchanged.
+
 ## Development
 
 | Command | Purpose |
@@ -127,6 +135,8 @@ Demo mode shows a replica placeholder and sample captions. You can optionally en
 | `npm run build` | Type-check and create a production build in `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `npm run lint` | Run ESLint |
+| `npm test` | Run Vitest API and hook tests with MSW Node |
+| `npm run test:watch` | Run Vitest in watch mode |
 
 ## Project structure
 
@@ -134,6 +144,10 @@ Demo mode shows a replica placeholder and sample captions. You can optionally en
 src/
   App.tsx                         # URL entry, device check, live call, and demo flow
   main.tsx                        # React entry point and CVIProvider
+  api/tutor.ts                    # Typed Tutor API client (Plan 1, not mounted)
+  hooks/tutor/                    # React Query mutation hooks, keys, and provider
+  mocks/                          # MSW fixtures, scenarios, handlers, and bootstraps
+  test/setup.ts                   # Vitest + Testing Library setup
   components/cvi/
     components/
       cvi-provider/               # Daily React context
@@ -142,7 +156,8 @@ src/
       device-select/              # Media controls and device dropdowns
       closed-captions/            # Caption toggle and two-line display
     hooks/                        # Call lifecycle, devices, and Tavus event handling
-docs/screenshots/                # README screenshots
+docs/frontend-api-and-mocks.md    # API/hook/mock usage and future wiring
+docs/screenshots/                 # README screenshots
 ```
 
 Additional generated components and API helpers may exist in the source tree; the active conversation UI does not include chat.
@@ -162,13 +177,16 @@ Paths below are relative to the repository root. Component folders contain `inde
 | Change join/leave behavior or add meeting-token support | `src/components/cvi/hooks/use-cvi-call.tsx` |
 | Change device initialization | `src/components/cvi/hooks/use-start-haircheck.tsx` |
 | Inspect Tavus event types and subscription helpers | `src/components/cvi/hooks/cvi-events-hooks.tsx` |
+| Change Tutor API calls, auth headers, or errors | `src/api/tutor.ts` |
+| Change Tutor mutation hooks, retry defaults, or cache keys | `src/hooks/tutor/` |
+| Change mock scenarios, fixtures, or MSW bootstraps | `src/mocks/` |
 | Change global styles | `src/index.css` |
 
 Edit generated Tavus files like normal application source. Re-running the Tavus component generator can replace local customizations, so inspect its proposed changes before accepting replacements.
 
 ### Check your changes
 
-Run `npm run build` for TypeScript and production bundling, and `npm run lint` for static checks. There is currently no automated test script in `package.json`.
+Run `npm run build` for TypeScript and production bundling, `npm run lint` for static checks, and `npm test` for the Vitest/MSW API and hook suites. Add or update MSW Node tests when changing the Tutor client, hooks, or scenarios.
 
 For UI changes, check the following manually:
 
@@ -182,6 +200,7 @@ Demo mode verifies layout and local media controls. It does not verify backend s
 ## Implementation notes
 
 - **Stack:** React 19, TypeScript, Vite, CSS Modules, `@daily-co/daily-react`, and `@daily-co/daily-js`.
+- **Tutor API layer:** Plan 1 ships a typed client, React Query hooks, and opt-in MSW mocks. They are not mounted by screens yet; see `docs/frontend-api-and-mocks.md`.
 - **Media:** Daily supplies camera, microphone, screen tracks, and participant state; React components control their layout.
 - **Captions:** Tavus streaming utterance events feed the caption display. Live captions depend on the session emitting these events.
 - **Branding:** “Ask Loka” and “Data Wrangling with SQL” are currently hard-coded demonstration labels, not backend course metadata.
