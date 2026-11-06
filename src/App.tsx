@@ -1,10 +1,17 @@
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
+import { SessionPage } from './components/session-page'
+import { SessionsHome } from './components/sessions-home'
 import { HairCheck } from './components/cvi/components/hair-check'
 import { Conversation } from './components/cvi/components/conversation'
 
+const subscribe = (listener: () => void) => { window.addEventListener('popstate', listener); return () => window.removeEventListener('popstate', listener); };
 export default function App() {
+  useSyncExternalStore(subscribe, () => window.location.href);
   const [url, setUrl] = useState('')
   const [screen, setScreen] = useState<'url' | 'check' | 'call' | 'demo'>(new URLSearchParams(window.location.search).has('demo') ? 'demo' : 'url')
+  const sessionMatch = window.location.pathname.match(/^\/sessions\/([^/]+)\/?$/)
+  if (sessionMatch) return <SessionPage bookingId={sessionMatch[1]} />
+  if (window.location.pathname !== '/welcome' && !new URLSearchParams(window.location.search).has('demo')) return <SessionsHome />
   return <main>
     {screen === 'url' && <form style={{ display: 'grid', gap: 20, maxWidth: 720, margin: '40px auto' }} onSubmit={event => {
       event.preventDefault()
