@@ -44,7 +44,7 @@ Versions below describe the dependency ranges in `package.json`; `package-lock.j
 | Tavus CVI UI | Generated source | Starting components and event hooks copied into `src/components/cvi/` and customized here |
 | CSS Modules | `*.module.css` | Component-scoped styling; `src/index.css` supplies global defaults |
 | TanStack Query | v5 | Mutation state, scoped cache keys, and retry defaults for Tutor API calls |
-| MSW + Vitest | MSW 2 / Vitest 5 | Opt-in HTTP mocks plus API and hook tests; not mounted in the app |
+| MSW + Vitest | MSW 2 / Vitest 5 | Opt-in development HTTP mocks plus API and hook tests |
 | ESLint | 9 | Static checks, including React hook rules |
 
 **Tavus and Daily have different jobs:** Tavus runs the conversational AI and provides the replica stream and conversation events. Daily carries the real-time media and exposes browser call controls. This repository owns the React interface around them.
@@ -55,21 +55,23 @@ Jotai is also declared as a dependency. The entry flow uses React state; new con
 
 ```text
 main.tsx
-  └─ CVIProvider (wraps DailyProvider)
-       └─ App.tsx
-            ├─ URL form
-            │    └─ HairCheck → Join → Conversation
-            └─ ?demo → Conversation with demo=true
+  └─ opt-in MSW → QueryClientProvider → TutorApiProvider
+       └─ CVIProvider (wraps DailyProvider)
+            └─ App.tsx
+                 ├─ /              → SessionsHome (local fixtures)
+                 ├─ /sessions/:id  → SessionPage → HairCheck → Conversation
+                 ├─ /welcome       → URL form → HairCheck → Conversation (live)
+                 └─ ?demo          → Conversation with demo=true
 ```
 
-- **Entry:** `App.tsx` stores the pasted URL and current screen in memory. Reloading clears that state; `?demo` selects the demo screen on startup. There is no router.
+- **Entry:** `App.tsx` switches on `window.location.pathname` and listens for `popstate`. `/` renders the sessions dashboard, `/sessions/:bookingId` the session route, and `/welcome` the pasted-URL live flow. `?demo` opens the demo conversation directly.
 - **Device check:** `HairCheck` starts the local camera/microphone preview and uses Daily device APIs for input/output selection. Speaker testing uses the browser's Web Audio API.
 - **Joining:** `Conversation` calls `useCVICall`, which invokes Daily's `join({ url })`. The hook guards against joining again while already joining or joined.
 - **Media rendering:** Daily video components render the replica, local camera, or shared screen. Daily audio handles remote sound. React state selects grid or speaker layout; screen sharing uses the presentation layout.
 - **Captions:** `cvi-events-hooks.tsx` listens for Daily app messages. `use-closed-caption.tsx` consumes Tavus `conversation.utterance.streaming` events. The caption component displays the latest two visual lines and clears a final caption after a short delay.
-- **Leaving:** The leave control calls Daily's `leave()` and returns to the URL form. Backend session termination is a separate integration step.
+- **Leaving:** The leave control opens a shared confirmation dialog. On `/welcome` it calls Daily's `leave()` and returns to the URL form. On the mock session route it ends the session through the controller. Backend session termination remains a separate integration step.
 
-The active entry flow does not call the API helpers under `src/api/` or the Tutor client and hooks added in Plan 1. Session creation, screen wiring, and media integration remain outside this phase. Generated chat files remain in the repository but are not mounted in the conversation screen.
+The `/welcome` live entry does not call the Tutor API. The dedicated session route does when `?mock=1`: MSW starts before render, the controller starts and ends the session, and confirmed Leave routes back to the dashboard for feedback. Dashboard cards, cancellation, and history still use local fixtures. Generated chat files remain in the repository but are not mounted in the conversation screen.
 
 ## Features
 
@@ -141,9 +143,9 @@ Demo mode shows a replica placeholder and sample captions. You can optionally en
 
 ## Integration roadmap
 
-Plan 1 is complete: a typed Tutor API client, reusable React Query hooks, deterministic MSW scenarios, and tests exist under `src/api/tutor.ts`, `src/hooks/tutor/`, and `src/mocks/`. None of it is mounted by the current screens, which still use local fixtures.
+Plan 1 is complete: a typed Tutor API client, reusable React Query hooks, deterministic MSW scenarios, and tests exist under `src/api/tutor.ts`, `src/hooks/tutor/`, and `src/mocks/`. The booking read/cancellation hooks are not mounted by screens; the session controller uses the start/end mutations on the mock-backed session route.
 
-Next, build the Plan 2 session controller and a separate mock media adapter before connecting live APIs. See the [frontend integration plan](docs/frontend-integration-plan.md) for scope and validation scenarios, and [Tutor API client, hooks, and mocks](docs/frontend-api-and-mocks.md) for configuration, auth, retry semantics, and future wiring. MSW is installed as a dev dependency; browser mock startup is opt-in and `main.tsx` is unchanged.
+Plan 2's `useTutorSession` controller and mock media adapter are implemented for `/sessions/:bookingId?mock=1`. Next is a real media adapter, authentication for the session route, and live API wiring. See the [frontend integration plan](docs/frontend-integration-plan.md) for scope and validation scenarios, and [Tutor API client, hooks, and mocks](docs/frontend-api-and-mocks.md) for configuration, auth, retry semantics, and current wiring. In development, `main.tsx` awaits MSW when mocks are enabled and mounts `QueryClientProvider` and `TutorApiProvider`.
 
 ## Live and demo conversation screens
 
@@ -189,20 +191,27 @@ For dialog previews, use `/?demo&dialog=leave`, `/?demo&dialog=connection`, or `
 
 ```text
 src/
-  App.tsx                         # URL entry, device check, live call, and demo flow
-  main.tsx                        # React entry point and CVIProvider
-  api/tutor.ts                    # Typed Tutor API client (Plan 1, not mounted)
-  hooks/tutor/                    # React Query mutation hooks, keys, and provider
+  App.tsx                         # Path-based entry: dashboard, session route, live flow
+  main.tsx                        # React entry, opt-in MSW bootstrap, and providers
+  api/tutor.ts                    # Typed Tutor API client
+  fixtures/tutor.ts               # Shared synthetic booking/session metadata
+  session-navigation.ts           # In-app pushState navigation helper
+  hooks/tutor/                    # React Query hooks, session controller, keys, provider
   mocks/                          # MSW fixtures, scenarios, handlers, and bootstraps
   test/setup.ts                   # Vitest + Testing Library setup
-  components/cvi/
-    components/
-      cvi-provider/               # Daily React context
-      hair-check/                 # Pre-call preview and device settings
-      conversation/               # Session layout and presentation/grid modes
-      device-select/              # Media controls and device dropdowns
-      closed-captions/            # Caption toggle and two-line display
-    hooks/                        # Call lifecycle, devices, and Tavus event handling
+  components/
+    sessions-home/                # Ask Loka dashboard, details, and cancellation dialogs
+    session-page/                 # /sessions/:bookingId states and device check
+    session-feedback/             # Post-session rating and comments dialog
+    cvi/
+      components/
+        cvi-provider/             # Daily React context
+        hair-check/               # Pre-call preview and device settings
+        conversation/             # Session layout and presentation/grid modes
+        session-dialog/           # Leave, connection, and microphone dialogs
+        device-select/            # Media controls and device dropdowns
+        closed-captions/          # Caption toggle and two-line display
+      hooks/                      # Call lifecycle, devices, and Tavus event handling
 docs/frontend-api-and-mocks.md    # API/hook/mock usage and future wiring
 docs/screenshots/                 # README screenshots
 ```
@@ -215,7 +224,10 @@ Paths below are relative to the repository root. Component folders contain `inde
 
 | Task | Start here |
 | --- | --- |
-| Change entry screen or switch between demo/live | `src/App.tsx` |
+| Change route selection or switch between demo/live | `src/App.tsx` |
+| Change the sessions dashboard, cancellation, or details dialog | `src/components/sessions-home/` |
+| Change session-route states, device check, or mock join | `src/components/session-page/` |
+| Change post-session feedback | `src/components/session-feedback/` |
 | Change pre-call device check | `src/components/cvi/components/hair-check/` |
 | Change session header, sidebar, grid, or presentation layout | `src/components/cvi/components/conversation/` |
 | Change mic, camera, screen-share controls or dropdowns | `src/components/cvi/components/device-select/` |
@@ -225,7 +237,7 @@ Paths below are relative to the repository root. Component folders contain `inde
 | Change device initialization | `src/components/cvi/hooks/use-start-haircheck.tsx` |
 | Inspect Tavus event types and subscription helpers | `src/components/cvi/hooks/cvi-events-hooks.tsx` |
 | Change Tutor API calls, auth headers, or errors | `src/api/tutor.ts` |
-| Change Tutor mutation hooks, retry defaults, or cache keys | `src/hooks/tutor/` |
+| Change Tutor hooks, session controller, retry defaults, or cache keys | `src/hooks/tutor/` |
 | Change mock scenarios, fixtures, or MSW bootstraps | `src/mocks/` |
 | Change global styles | `src/index.css` |
 
@@ -247,7 +259,7 @@ Demo mode verifies layout and local media controls. It does not verify backend s
 ## Implementation notes
 
 - **Stack:** React 19, TypeScript, Vite, CSS Modules, `@daily-co/daily-react`, and `@daily-co/daily-js`.
-- **Tutor API layer:** Plan 1 ships a typed client, React Query hooks, and opt-in MSW mocks. They are not mounted by screens yet; see `docs/frontend-api-and-mocks.md`.
+- **Tutor API layer:** Plan 1 ships a typed client, React Query hooks, and opt-in MSW mocks. The session controller uses the start/end mutations; booking reads and cancellation are not mounted by screens yet. See `docs/frontend-api-and-mocks.md`.
 - **Media:** Daily supplies camera, microphone, screen tracks, and participant state; React components control their layout.
 - **Captions:** Tavus streaming utterance events feed the caption display. Live captions depend on the session emitting these events.
 - **Branding:** “Ask Loka” and “Data Wrangling with SQL” are currently hard-coded demonstration labels, not backend course metadata.

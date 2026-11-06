@@ -34,8 +34,8 @@ export interface StartTutorMocksOptions {
 }
 
 /**
- * Opt-in browser bootstrap. Call and await this before rendering when mock
- * mode is enabled; it is intentionally not referenced by `main.tsx`.
+ * Opt-in browser bootstrap. `main.tsx` calls and awaits this before rendering
+ * when mock mode is enabled.
  *
  * Unhandled requests are bypassed so provider, media and asset traffic never
  * get intercepted.

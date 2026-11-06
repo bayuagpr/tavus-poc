@@ -171,18 +171,16 @@ submission and returns `409 FEEDBACK_ALREADY_SUBMITTED` on a second one.
 
 ## MSW browser mock mode (opt-in)
 
-Mock mode is not started by the app. To wire it later, await the worker before
-rendering (this snippet is documentation only; `main.tsx` is deliberately
-unchanged):
+In development, `main.tsx` awaits the worker before rendering when the URL has
+`?mock=1` or the env flag is set:
 
 ```tsx
-async function bootstrap() {
-  if (import.meta.env.VITE_ENABLE_TUTOR_MOCKS === 'true') {
-    const { startTutorMocks } = await import('@/mocks/browser');
-    await startTutorMocks();
-  }
-
-  createRoot(document.getElementById('root')!).render(<App />);
+const mocks = import.meta.env.DEV &&
+  (new URLSearchParams(window.location.search).get('mock') === '1' ||
+    import.meta.env.VITE_ENABLE_TUTOR_MOCKS === 'true');
+if (mocks) {
+  const { startTutorMocks } = await import('./mocks/browser');
+  await startTutorMocks();
 }
 ```
 
@@ -190,8 +188,7 @@ Set the flag in an untracked `.env.local`:
 
 ```sh
 VITE_ENABLE_TUTOR_MOCKS=true
-# Any origin can be used; handlers match tutor paths on any origin.
-VITE_SSE_API_BASE_URL=https://sse.mock.invalid
+# In mock mode the app uses baseUrl ''; handlers match tutor paths on any origin.
 ```
 
 `startTutorMocks()` awaits service-worker registration, bypasses unhandled

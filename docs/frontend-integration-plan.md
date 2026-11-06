@@ -1,8 +1,10 @@
 # Frontend integration plan
 
-Status: Plan 1 implemented 2026-11-06. Plans 2–3 remain deferred. MSW is installed
-as a dev dependency, but mock mode is not mounted in the app and no screens were
-changed. See [Tutor API client, React Query hooks, and MSW mocks](frontend-api-and-mocks.md)
+Status: Plan 1 implemented 2026-11-06. Plan 2's session controller and mock media
+adapter are implemented for the mock-backed session route; live media wiring and
+Plan 3 remain deferred. MSW starts in development only when `?mock=1` or
+`VITE_ENABLE_TUTOR_MOCKS=true`. See
+[Tutor API client, React Query hooks, and MSW mocks](frontend-api-and-mocks.md)
 for usage.
 
 ## Approach
@@ -142,10 +144,12 @@ These do not block mock development. Record assumptions explicitly in fixtures u
 
 ## Next step
 
-Implement Plan 2: the `useTutorSession` controller and media boundary. Plan 1
-is complete; do not extend the API layer with screen-specific behavior. Keep
-duplicate-request prevention, stale-response handling, and cross-request retry
-limits in the controller rather than in the reusable mutation hooks.
+Plan 2's `useTutorSession` controller and media boundary are implemented against
+the mock media adapter for `/sessions/:bookingId?mock=1`. Plan 1 is complete; do
+not extend the API layer with screen-specific behavior. Keep duplicate-request
+prevention, stale-response handling, and cross-request retry limits in the
+controller rather than in the reusable mutation hooks. Next: connect a real media
+adapter, authenticate the session route, and wire dashboard reads/cancellation.
 
 ## Booking-layer follow-up
 
