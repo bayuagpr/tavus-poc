@@ -1,0 +1,18 @@
+.dialog { position:fixed; inset:0; margin:auto; width:min(480px,calc(100vw - 32px)); max-height:calc(100dvh - 40px); overflow:auto; border:0; border-radius:18px; padding:24px; background:#fff; color:#414143; color-scheme:light; font-family:"Segoe UI",sans-serif; box-shadow:0 20px 80px #0003; text-align:left; }
+.dialog::backdrop { background:#0009; }
+.dialog header { display:flex; justify-content:space-between; align-items:center; gap:16px; border-bottom:1px solid #ececee; padding-bottom:18px; }
+.dialog h2 { font-size:18px; font-weight:600; line-height:1.4; color:#171719; }
+.dialog header button { display:grid; place-items:center; width:32px; height:32px; padding:0; border:0; background:none; color:#444; }
+.dialog > p { font-size:15px; line-height:1.5; margin:20px 0; }
+.consequences { padding:14px; background:#f7f7f9; border-radius:12px; }
+.consequences h3,.errorCode { text-transform:uppercase; font-size:11px; letter-spacing:.07em; font-weight:500; color:#68686c; }
+.consequences > div { display:flex; align-items:center; gap:10px; font-size:13px; margin-top:8px; }
+.symbol { display:grid; place-items:center; width:30px; height:30px; border-radius:8px; background:#e6e6e9; flex-shrink:0; }
+.errorCode { background:#f7f7f9; padding:12px; border-radius:9px; }
+.dialog footer { display:flex; gap:14px; margin-top:32px; }
+.dialog footer button { flex:1; border:1px solid #c7c7ca; border-radius:8px; color:#414143; background:white; padding:9px 12px; font-size:14px; }
+.dialog footer .danger { background:#cf0808; color:white; border-color:transparent; }
+.dialog footer .primary { background:#f5822d; color:white; border-color:transparent; }
+.dialog button:disabled { opacity:.55; cursor:wait; }
+.dialog button:focus-visible { outline:2px solid #e37a2c; outline-offset:3px; }
+.dialog .error { color:#b3261e; font-size:13px; }

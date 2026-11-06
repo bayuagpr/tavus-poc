@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
 	DailyAudio,
 	DailyVideo,
@@ -16,6 +16,7 @@ import { useReplicaIDs } from "../../hooks/use-replica-ids";
 import { useCVICall } from "../../hooks/use-cvi-call";
 
 
+import { SessionDialog, type SessionDialogKind } from '../session-dialog';
 import styles from "./conversation.module.css";
 
 
@@ -37,6 +38,7 @@ interface ConversationProps {
 	onLeave: () => void;
 	conversationUrl: string;
 	demo?: boolean;
+ onEndSession?: () => Promise<void>;
 }
 
 const VideoPreview = React.memo(({ id }: { id: string }) => {
@@ -108,11 +110,12 @@ const MainVideo = React.memo(() => {
 	);
 });
 
-export const Conversation = React.memo(({ onLeave, conversationUrl, demo = false }: ConversationProps) => {
+export const Conversation = React.memo(({ conversationUrl, demo = false, onEndSession }: ConversationProps) => {
 	const { joinCall, leaveCall } = useCVICall();
 	const daily = useDaily();
 	const replicaIds = useReplicaIDs();
  const rootRef = useRef<HTMLDivElement>(null);
+ const enteredAt = useRef(Date.now());
  const [grid, setGrid] = useState(false);
  const [fullscreen, setFullscreen] = useState(false);
  const localId = useLocalSessionId();
@@ -127,11 +130,21 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, demo = false
 	const meetingState = useMeetingState();
 	const joinStarted = useRef(false);
 	const [joinError, setJoinError] = useState<string | null>(null);
-	const { hasMicError } = useDevices()
+ const [modal, setModal] = useState<SessionDialogKind | null>(() => {
+  if (!demo) return null;
+  const preview = new URLSearchParams(window.location.search).get('dialog');
+  return preview === 'leave' || preview === 'connection' || preview === 'microphone' ? preview : null;
+ });
+ const [modalBusy, setModalBusy] = useState(false);
+ const [modalError, setModalError] = useState('');
+ useEffect(() => { const offline = () => { setModalError(''); setModal('connection'); }; window.addEventListener('offline', offline); return () => window.removeEventListener('offline', offline); }, []);
+
+	const { hasMicError } = useDevices();
+ useEffect(() => { if (hasMicError) { setModalError(''); setModal('microphone'); } }, [hasMicError]);
 
 	useEffect(() => {
         if (meetingState === 'error') {
-            setJoinError('Unable to join this room. Check that the conversation is still active and use its latest conversation URL.');
+            setModal('connection');
         }
     }, [meetingState]);
 
@@ -140,16 +153,25 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, demo = false
         joinStarted.current = true;
         void joinCall({ url: conversationUrl }).catch((error: unknown) => {
             console.error('Unable to join conversation', error);
-            setJoinError('Unable to join this room. Check that the conversation is still active and use its latest conversation URL.');
+            setModal('connection');
         });
     }, [joinCall, conversationUrl, demo]);
 
-	const handleLeave = useCallback(() => {
-		void leaveCall().then(onLeave).catch((error: unknown) => {
-            console.error("Unable to leave conversation", error);
-            setJoinError("Unable to disconnect. Refresh the page before trying again.");
-        });
-	}, [leaveCall, onLeave]);
+
+ const confirmModal = async () => {
+  setModalBusy(true); setModalError('');
+  try {
+   if (modal === 'leave') { await leaveCall(); if (onEndSession) { await onEndSession(); return; } const duration = Math.max(0, Math.floor((Date.now() - enteredAt.current) / 1000)); window.location.assign(`/?sessionOutcome=early&duration=${duration}`); return; }
+   if (modal === 'microphone') {
+    if (!daily) throw new Error('Video client is not ready.');
+    await daily.startCamera({ startVideoOff: false, startAudioOff: false });
+    setPreviewEnabled(true);
+   } else if (!navigator.onLine) { throw new Error('You are still offline. Check your internet connection.'); }
+   else if (!demo) { await leaveCall(); await joinCall({ url: conversationUrl }); }
+   setModal(null);
+  } catch (error) { setModalError(error instanceof Error && error.message === 'You are still offline. Check your internet connection.' ? error.message : 'Unable to complete this action. Check your connection and browser permissions, then try again.'); }
+  finally { setModalBusy(false); }
+ };
 
 	return (
 		<ClosedCaptionsProvider defaultEnabled={demo}><div ref={rootRef} className={`${styles.container} ${grid && !isScreenSharing ? styles.gridMode : ''} ${isScreenSharing ? styles.presentationMode : ''}`}>
@@ -190,7 +212,7 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, demo = false
  
 					<CameraSelectBtn />
 					<div className={styles.centerControls}><ScreenShareButton /><ClosedCaptionsButton/></div>
-					<button type="button" className={styles.leaveButton} onClick={handleLeave} title="Leave session" aria-label="Leave session">
+					<button type="button" className={styles.leaveButton} onClick={() => { setModalError(''); setModal('leave'); }} title="Leave session" aria-label="Leave session">
 						<span>Leave Session</span><span className={styles.leaveButtonIcon}>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -217,6 +239,7 @@ export const Conversation = React.memo(({ onLeave, conversationUrl, demo = false
 			
  
  {!demo && <DailyAudio />}
+ {modal && <SessionDialog kind={modal} busy={modalBusy} error={modalError} onClose={() => { setModal(null); setModalError(''); }} onConfirm={() => void confirmModal()}/>}
 		</div></ClosedCaptionsProvider>
 	);
 });
