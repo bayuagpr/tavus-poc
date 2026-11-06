@@ -15,7 +15,8 @@ function DeviceIcon({ kind, off = false }: { kind: 'camera' | 'mic' | 'speaker' 
 }
 export function HairCheck({ isJoinBtnLoading = false, onJoin, onCancel }: { isJoinBtnLoading?: boolean; onJoin: () => void; onCancel?: () => void }) {
  const daily = useDaily(); const cam = useLocalCamera(); const mic = useLocalMicrophone(); const d = useDevices(); const p = useStartHaircheck(); const [error, setError] = useState('');
- useEffect(() => { p.requestPermissions(); }, [p.requestPermissions]);
+ const { requestPermissions } = p;
+ useEffect(() => { requestPermissions(); }, [requestPermissions]);
  const change = (action: Promise<unknown>) => { void action.catch(() => setError('Could not change device. Please try again.')); };
  const test = async () => { const ctx = new AudioContext(); try { const routable = ctx as AudioContext & { setSinkId?: (id: string) => Promise<void> }; const id = d.currentSpeaker?.device.deviceId; if(id && routable.setSinkId) await routable.setSinkId(id); await ctx.resume(); const o = ctx.createOscillator(); const g = ctx.createGain(); g.gain.setValueAtTime(.1, ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .6); o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + .65); o.onended = () => { void ctx.close(); }; } catch { setError('Unable to play test sound.'); await ctx.close(); } };
  return <section className={styles.page} aria-label="Camera and microphone check"><div className={styles.card}>
@@ -29,3 +30,4 @@ export function HairCheck({ isJoinBtnLoading = false, onJoin, onCancel }: { isJo
  {(error || p.isPermissionsDenied) && <p role="alert" className={styles.error}>{error || 'Allow camera and microphone access in your browser settings, then reload.'}</p>}
  </div></div></section>;
 }
+

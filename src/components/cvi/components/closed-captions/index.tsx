@@ -22,7 +22,7 @@ export const ClosedCaptionsProvider = ({
 	return <ClosedCaptionsContext.Provider value={value}>{children}</ClosedCaptionsContext.Provider>;
 };
 
-export const useClosedCaptionsContext = (): ClosedCaptionsContextValue => {
+const useClosedCaptionsContext = (): ClosedCaptionsContextValue => {
 	const ctx = useContext(ClosedCaptionsContext);
 	if (!ctx) {
 		throw new Error('ClosedCaptions components must be used within <ClosedCaptionsProvider>');
@@ -97,4 +97,5 @@ export const ClosedCaptions = memo(({ demo = false }: { demo?: boolean }) => {
 });
 
 ClosedCaptions.displayName = 'ClosedCaptions';
+
 
