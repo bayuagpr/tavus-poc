@@ -1,0 +1,22 @@
+
+.panel { position:absolute; right:0; top:0; bottom:0; width:min(350px, 100%); background:#18212b; color:#fff; z-index:30; display:none; flex-direction:column; text-align:left; border-left:1px solid #ffffff20; }
+.panelOpen { display:flex; }
+.header { display:flex; align-items:center; justify-content:space-between; padding:18px; border-bottom:1px solid #ffffff20; }
+.closeButton,.chatButton { background:#ffffff20; color:white; border:1px solid #ffffff30; display:grid; place-items:center; padding:0; }
+.chatButton { width:48px; height:48px; border-radius:50%; }
+.chatButtonActive { background:#fff; color:#18212b; }
+.closeButton { width:32px; height:32px; border-radius:8px; }
+.messageList { flex:1; overflow-y:auto; list-style:none; padding:18px; min-height:0; }
+.messageRow { display:flex; flex-direction:column; gap:5px; margin-bottom:16px; }
+.messageRowUser { align-items:flex-end; }
+.messageRowReplica { align-items:flex-start; }
+.messageRole { font-size:11px; color:#b7c4d0; }
+.messageBubble { border-radius:12px; padding:10px 12px; font-size:14px; line-height:1.5; overflow-wrap:anywhere; max-width:95%; }
+.messageBubbleUser { background:#f5802f; color:#171717; }
+.messageBubbleReplica { background:#ffffff12; }
+.empty { font-size:14px; color:#b7c4d0; }
+.composer { display:flex; gap:8px; padding:14px; border-top:1px solid #ffffff20; }
+.composerInput { flex:1; min-width:0; resize:vertical; max-height:120px; border-radius:8px; background:#ffffff10; color:white; border:1px solid #ffffff30; padding:10px; font:inherit; font-size:14px; }
+.sendButton { padding:10px; color:white; background:#b65414; }
+.sendButton:disabled { opacity:.4; cursor:not-allowed; }
+.chatButtonIcon { display:flex; }

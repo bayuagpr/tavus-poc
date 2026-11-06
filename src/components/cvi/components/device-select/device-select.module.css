@@ -1,0 +1,153 @@
+/* SelectDevice styles */
+.selectDevice {
+	height: 3rem;
+	width: 5.5rem;
+	border-radius: 9999px;
+	background-color: rgba(255, 255, 255, 0.2);
+	padding: 0 0.75rem;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(10px);
+	color: transparent;
+	padding-right: 2rem; /* space for arrow */
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	cursor: pointer;
+}
+
+.selectDevice::-ms-expand {
+	display: none;
+}
+
+.selectDevice option { color: #20272e; background-color: #fff; }
+
+.selectDevice:focus {
+	outline: none;
+}
+
+/* Device button container styles */
+.deviceButtonContainer {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 9999px;
+	backdrop-filter: blur(4px);
+}
+
+/* Device button styles */
+.deviceButton {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 10;
+	height: 3rem;
+	width: 3rem;
+	border-radius: 9999px;
+	background-color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid transparent;
+	cursor: pointer;
+}
+
+.deviceButtonIcon {
+	display: flex;
+}
+
+.deviceButton:disabled {
+	opacity: 0.5;
+}
+
+/* Screen reader only text */
+.srOnly {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Controls container */
+.controlsContainer {
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+	align-items: center;
+}
+
+.selectDeviceContainer {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.selectArrow {
+	position: absolute;
+	right: 1rem;
+	pointer-events: none;
+	display: flex;
+	align-items: center;
+	height: 100%;
+}
+
+.screenShareButton {
+	cursor: pointer;
+	position: relative;
+	height: 3rem;
+	width: 3rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 9999px;
+	backdrop-filter: blur(4px);
+	background-color: rgba(255, 255, 255, 0.2);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+
+
+/* Compact controls with persistent action labels. */
+.deviceButtonContainer { border-radius:0; backdrop-filter:none; width:64px; height:54px; }
+.deviceButton { width:44px; height:32px; padding:0; border:0; border-radius:5px; background:transparent; color:#eee; }
+.deviceButton svg { width:17px; height:17px; }
+
+.deviceButton:hover { background:#ffffff0d; border:0; }
+.deviceButton:focus-visible,.selectDevice:focus-visible,.screenShareButton:focus-visible { outline:2px solid #f5802f; outline-offset:2px; }
+.selectDeviceContainer { position:absolute; top:0; right:0; width:20px; height:32px; }
+.selectDevice { width:20px; height:32px; padding:0; border:0; border-radius:4px; background:transparent; backdrop-filter:none; }
+.selectArrow { right:4px; }
+.selectArrow svg { width:10px; height:10px; }
+.controlLabel { position:absolute; top:38px; left:0; width:64px; text-align:center; color:#d5d5d5; font-size:10px; font-weight:400; white-space:nowrap; line-height:14px; }
+.screenShareButton { width:64px; height:54px; border:0; border-radius:4px; background:transparent; padding:0 0 22px; backdrop-filter:none; }
+.screenShareButton svg { width:17px; height:17px; }
+
+/* Readable, comfortably sized flat toolbar controls. */
+.deviceButtonContainer { width:88px; height:64px; }
+.deviceButton { width:56px; height:42px; border-radius:7px; }
+.deviceButton svg { width:21px; height:21px; }
+.deviceButtonIcon { align-items:center; justify-content:center; }
+.selectDeviceContainer { width:32px; height:42px; }
+.selectDevice { width:32px; height:42px; border-radius:7px; }
+.selectArrow { right:10px; }
+.selectArrow svg { width:12px; height:12px; }
+.selectDevice:hover { background:#ffffff0d; }
+.controlLabel { top:46px; width:88px; font-size:12px; line-height:16px; color:#d9dce1; }
+.deviceButton .controlLabel { left:0; }
+.screenShareButton { width:88px; height:64px; padding-bottom:22px; }
+.screenShareButton svg { width:21px; height:21px; }
+.screenShareButton:hover { background:#ffffff0d; }
+.screenShareButton > span:first-child { display:flex; align-items:center; }
+.deviceButton:disabled { cursor:not-allowed; opacity:.4; }
+@media(max-width:600px) { .deviceButtonContainer { width:68px; } .deviceButton { width:40px; } .selectDeviceContainer,.selectDevice { width:28px; } .controlLabel { width:68px; font-size:11px; } .screenShareButton { width:76px; } .screenShareButton .controlLabel { width:76px; } }
+
+.controlLabel { pointer-events:none; cursor:default; }
+.standaloneControl { position:relative; width:88px; height:64px; }
+.screenShareButton { height:42px; padding:0; }
+@media(max-width:600px) { .standaloneControl { width:76px; } }

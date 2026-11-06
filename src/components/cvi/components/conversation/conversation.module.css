@@ -1,0 +1,364 @@
+.container {
+	position: relative;
+	width: 100%;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	aspect-ratio: 9/16;
+	overflow: hidden;
+	border-radius: 0.5rem;
+	max-height: 90vh;
+  background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%);
+	background-size: 400% 400%;
+	animation: gradient 15s ease infinite;
+}
+
+@media (min-width: 768px) {
+	.container {
+		aspect-ratio: 16/9;
+	}
+}
+
+.errorContainer {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(248, 250, 252, 0.08);
+	color: white;
+	height: 100%;
+	font-size: 1.5rem;
+	font-weight: 600;
+	text-align: center;
+}
+
+.videoContainer {
+	position: relative;
+	z-index: 5;
+	width: 100%;
+	height: 100%;
+}
+
+.footer {
+	position: absolute;
+	bottom: 1.5rem;
+	left: 0;
+	right: 0;
+	z-index: 20;
+}
+
+.footerControls {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 16px;
+}
+
+.leaveButton {
+	background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+	color: white;
+	border: none;
+	font-size: 16px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	height: 3rem;
+	width: 3rem;
+	border-radius: 9999px;
+	background-color: #ef4444;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.leaveButton:hover {
+	opacity: 0.8;
+}
+
+.leaveButtonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ReplicaVideo styles */
+.mainVideoContainer {
+	background: transparent;
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.mainVideoContainerScreenSharing {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.mainVideo {
+	position: absolute;
+	inset: 0;
+	object-position: center;
+	object-fit: cover !important;
+	height: 100%;
+	width: 100%;
+	transition: all 0.3s ease;
+}
+
+.mainVideoScreenSharing {
+	object-fit: contain !important;
+}
+
+.mainVideoHidden {
+	display: none;
+}
+
+/* PreviewVideo styles */
+.previewVideoContainer {
+	position: relative;
+	background: rgba(2, 6, 23, 0.3);
+	aspect-ratio: 16/9;
+	width: 11rem;
+	border-radius: 1rem;
+	overflow: hidden;
+	max-height: 120px;
+	z-index: 10;
+}
+
+@media (min-width: 768px) {
+	.previewVideoContainer {
+		max-height: 100%;
+	}
+}
+
+@media (min-width: 1024px) {
+	.previewVideoContainer {
+		width: 17.875rem;
+	}
+}
+
+.previewVideoContainerVertical {
+	height: 40.5rem;
+	width: 6rem;
+}
+
+.previewVideoContainerHidden {
+	background: transparent;
+	display: none;
+}
+
+.previewVideo {
+	width: 100%;
+	height: auto;
+	max-height: 120px;
+}
+
+@media (min-width: 768px) {
+	.previewVideo {
+		max-height: 100%;
+	}
+}
+
+.previewVideoVertical {
+	height: 40.5rem;
+	width: 6rem;
+	object-fit: cover;
+}
+
+.previewVideoHidden {
+	display: none;
+}
+
+/* Main video container */
+.mainVideoContainer {
+	width: 100%;
+	height: 100%;
+}
+
+/* Self view container */
+.selfViewContainer {
+	position: absolute;
+	bottom: 5rem;
+	left: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+	.selfViewContainer {
+		bottom: 1rem;
+	}
+}
+
+/* Waiting message container */
+/* Start of Selection */
+.waitingContainer {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	color: white;
+	height: 100%;
+	font-size: 1.5rem;
+	font-weight: 600;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+/* End of Selection */
+
+.audioWaveContainer {
+	position: absolute;
+	bottom: 0.5rem;
+	right: 0.5rem;
+}
+
+.demoStage { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #fff; background: radial-gradient(ellipse at 50% 30%, #52616d, #20272e 80%); padding: 24px 24px 180px; }
+.demoStage h2 { font-size: 26px; font-weight: 500; }
+.demoStage p { font-size: 15px; max-width: 300px; color: #d6dee4; }
+.demoStage small { color: #bac5cd; }
+.demoBadge { position: absolute; top: 24px; right: 24px; border: 1px solid #ffffff40; border-radius: 20px; padding: 6px 12px; font-size: 11px; letter-spacing: .1em; }
+.demoAvatar { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; color: #adb9c4; background: #ffffff15; }
+.demoAvatar svg { width: 100%; height: 100%; }
+.demoSelf { width: clamp(160px, 24vw, 286px); aspect-ratio: 16/9; border: 1px solid #ffffff25; border-radius: 16px; background: #1d252f; color: #d6dee4; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; padding: 10px; font-size: 12px; }
+.demoSelf button { font-size: 12px; background: #fff; color: #26313d; }
+
+.connection { position:absolute; top:20px; left:20px; z-index:22; display:flex; gap:8px; align-items:center; padding:7px 12px; border-radius:20px; background:#101820bb; color:#e0e8ee; font-size:12px; }
+@media(max-width:600px) { .footerControls { gap:8px; flex-wrap:wrap; padding:0 10px; } }
+
+/* Learning session layout */
+.container { aspect-ratio:auto; height:calc(100dvh - 40px); max-height:none; min-height:650px; border:1px solid #303033; border-radius:0; background:#141413; animation:none; display:flex; align-items:stretch; justify-content:flex-start; text-align:left; color:#eee; }
+.sessionHeader { min-height:64px; padding:0 24px; border-bottom:1px solid #303033; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.sessionBrand { display:flex; align-items:center; gap:12px; }
+.sessionBrand strong { font-size:18px; font-weight:500; }
+.brandMark { width:30px; height:30px; border-radius:8px; background:#fff3e9; color:#e98440; display:grid; place-items:center; }
+.courseName { font-size:13px; color:#bec0c5; border-left:1px solid #444; padding-left:18px; margin-left:10px; }
+.connection { position:static; background:none; padding:0; font-size:12px; color:#a9bec4; }
+.videoContainer { flex:1; min-height:0; height:auto; display:grid; grid-template-columns:minmax(0, 1fr) 280px; grid-template-rows:28px minmax(0, 1fr) 76px; gap:12px 16px; padding:20px 24px 24px; }
+.stageHeading { grid-column:1/-1; font-size:12px; color:#a5a5ad; display:flex; align-items:center; }
+.mainVideoContainer { grid-column:1; grid-row:2; min-height:0; border-radius:12px; overflow:hidden; background:#202529; }
+.mainVideoContainer .mainVideoContainer { height:100%; }
+.mainVideo { border-radius:12px; }
+.replicaLabel { position:absolute; bottom:112px; left:24px; padding:7px 16px; border-radius:0 8px 0 12px; background:#202529dd; color:#eee; font-size:12px; z-index:10; }
+.selfViewContainer { position:relative; inset:auto; grid-column:2; grid-row:2 / 4; display:flex; align-items:stretch; justify-content:flex-start; gap:16px; min-height:0; }
+.previewVideoContainer,.demoSelf { width:100%; height:auto; aspect-ratio:16/9; max-height:180px; flex-shrink:0; border-radius:12px; background:#222426; }
+.previewVideo { width:100%; height:100%; max-height:none; object-fit:cover; }
+.youLabel { position:absolute; top:135px; left:8px; font-size:11px; background:#202529bb; padding:3px 8px; border-radius:4px; }
+.infoCard { padding:18px; background:#222426; border-radius:12px; font-size:13px; }
+.infoCard h3 { font-size:12px; font-weight:600; margin-bottom:16px; display:flex; justify-content:space-between; }
+.infoCard h3 > span { color:#a6b1bd; }
+.infoCard p { margin-bottom:12px; }
+.infoCard small { display:block; color:#a5a9b3; font-size:11px; line-height:1.7; }
+.person { display:flex; align-items:center; gap:10px; margin-top:14px; font-size:12px; }
+.personAvatar { display:grid; place-items:center; width:32px; height:32px; border-radius:50%; background:#2b4160; color:#c9d8f0; }
+.sessionNote { margin-top:16px; }
+.footer { position:static; border-top:1px solid #303033; padding:18px 24px; }
+.footerControls { justify-content:flex-start; gap:16px; }
+.leaveButton { margin-left:auto; width:auto; border-radius:8px; padding:0 20px; background:#cf1515; font-size:13px; }
+.leaveButtonIcon { display:none; }
+.demoStage { padding:24px; gap:8px; }
+.demoStage h2 { font-size:22px; }
+.demoAvatar { width:90px; height:90px; }
+.demoBadge { top:16px; right:16px; }
+@media(max-width:800px) { .container { height:auto; min-height:calc(100dvh - 24px); } .videoContainer { grid-template-columns:1fr; grid-template-rows:28px 360px 80px auto; } .selfViewContainer { grid-column:1; grid-row:4; display:grid; grid-template-columns:1fr 1fr; } .selfViewContainer .infoCard:last-child { grid-column:1/-1; } .youLabel { top:110px; } .replicaLabel { display:none; } .courseName { display:none; } .footerControls { flex-wrap:wrap; gap:8px; } .sessionHeader { padding:12px 16px; } }
+
+/* The session owns the viewport, independent of the entry form layout. */
+.container { position:fixed; inset:0; width:100%; height:100dvh; min-height:0; max-height:none; border:0; border-radius:0; z-index:1; overflow-y:auto; }
+.sessionHeader,.footer { flex-shrink:0; }
+@media(max-width:800px) { .container { height:100dvh; min-height:0; } .videoContainer { flex:none; } }
+
+.sessionHeader { min-height:56px; }
+.videoContainer { grid-template-columns:minmax(0, 1fr) 28%; grid-template-rows:24px minmax(0, 1fr) 64px; align-content:start; padding-top:16px; padding-bottom:100px; }
+.stageHeading { grid-column:1; justify-content:space-between; }
+.speakingStatus,.viewActions,.viewActions button { display:flex; align-items:center; gap:8px; }
+.viewActions button { background:none; border:0; color:#aaaeb9; padding:4px; font-size:11px; }
+.viewActions button:hover { color:white; }
+.timer { margin-left:14px; font-variant-numeric:tabular-nums; }
+.selfViewContainer { grid-row:2 / 4; }
+.previewVideoContainer,.demoSelf { max-height:none; }
+.infoCard { padding:18px; }
+.person { position:relative; }
+.participantState { margin-left:auto; color:#a4b0bc; display:flex; }
+.replicaLabel { display:flex; align-items:center; gap:8px; bottom:188px; }
+.replicaLabel i { width:5px; height:5px; border-radius:50%; background:#72d8b0; }
+.youLabel { top:unset; position:relative; margin-top:-42px; margin-bottom:5px; left:8px; align-self:flex-start; display:flex; align-items:center; gap:5px; z-index:12; }
+.footer { min-height:88px; }
+.footerControls { position:relative; }
+.centerControls { position:absolute; left:50%; transform:translateX(-50%); display:flex; gap:24px; }
+.gridMode .videoContainer { grid-template-columns:1fr 1fr; }
+.gridMode .selfViewContainer .infoCard { display:none; }
+.gridMode .previewVideoContainer,.gridMode .demoSelf { max-height:none; height:100%; }
+.gridMode .selfViewContainer { grid-row:2; }
+@media(max-width:800px) { .videoContainer { grid-template-columns:1fr; grid-template-rows:24px 340px 64px auto; padding-bottom:24px; } .stageHeading { grid-column:1; } .selfViewContainer { grid-row:4; } .centerControls { position:static; transform:none; margin-left:auto; gap:8px; } .gridMode .videoContainer { grid-template-columns:1fr; } .gridMode .selfViewContainer { grid-row:4; } .youLabel { display:none; } }
+
+.footer { min-height:82px; padding:16px 24px 12px; background:#141413; }
+.footerControls { gap:6px; min-height:54px; }
+.centerControls { gap:0; }
+.leaveButton { align-self:center; height:36px; }
+@media(max-width:600px) { .footer { padding-left:12px; padding-right:12px; } .centerControls { margin-left:8px; } .leaveButton { padding:0 10px; font-size:11px; } }
+
+.footer { min-height:96px; padding:14px 24px; }
+.footerControls { min-height:64px; gap:8px; }
+.centerControls { gap:20px; align-items:center; }
+.leaveButton { height:40px; padding:0 22px; font-size:13px; font-weight:600; }
+@media(max-width:600px) { .footer { padding:12px 8px; } .footerControls { gap:0; } .centerControls { gap:0; margin-left:0; } .leaveButton { padding:0 10px; font-size:11px; } }
+
+/* Final alignment and resilient camera states. */
+.container { --session-gap:16px; --session-muted:#b5bac4; font-family:"Segoe UI",sans-serif; }
+.videoContainer { padding:16px 24px 24px; gap:12px var(--session-gap); grid-template-columns:minmax(0,1fr) minmax(280px,28%); grid-template-rows:24px minmax(0,1fr) 64px; }
+.mainVideoContainer { min-width:0; }
+.selfViewContainer { min-width:0; overflow-y:auto; scrollbar-width:thin; }
+.previewVideoContainer { display:block; position:relative; width:100%; height:auto; aspect-ratio:16/9; flex-shrink:0; overflow:hidden; border-radius:12px; }
+.previewVideo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.previewVideoHidden { display:none; }
+.cameraOff { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:#242b33; color:#c6cdd5; font-size:13px; }
+.cameraAvatar { display:grid; place-items:center; width:64px; height:64px; border-radius:50%; background:#354860; color:#dbe6f2; font-size:24px; }
+.replicaLabel { bottom:100px; }
+.youLabel { flex-shrink:0; }
+.infoCard { flex-shrink:0; }
+.infoCard small,.stageHeading { color:var(--session-muted); }
+.viewActions button { min-height:32px; border-radius:6px; }
+.viewActions button:hover { background:#ffffff0d; }
+.container button:focus-visible { outline:2px solid #f5a568; outline-offset:3px; }
+.container button:active:not(:disabled) { opacity:.8; }
+.footer { padding:12px 24px; min-height:88px; }
+.errorContainer { grid-column:1/-1; height:auto; font-size:13px; padding:8px 12px; background:#622f29; border-radius:8px; }
+@media(max-width:800px) { .videoContainer { grid-template-columns:1fr; grid-template-rows:32px minmax(240px,45dvh) auto auto; padding:12px 16px 16px; } .selfViewContainer { grid-row:4; overflow:visible; } .gridMode .videoContainer { grid-template-columns:1fr; } .replicaLabel { display:none; } .footer { margin-top:auto; } }
+@media(prefers-reduced-motion:reduce) { .container * { animation:none !important; transition:none !important; } }
+
+/* Shared content stays readable, with both camera tiles in a stable rail. */
+.presentationMode .videoContainer { grid-template-columns:minmax(0,1fr) minmax(260px,28%); }
+.presentationMode .selfViewContainer { grid-column:2; grid-row:2 / 4; overflow-y:auto; }
+.presentationMode .previewVideoContainer { height:auto; aspect-ratio:16/9; flex:0 0 auto; }
+.presentationMode .mainVideo { object-fit:contain !important; background:#1d2226; }
+.presentationMode .youLabel { display:none; }
+.presentationMode .previewVideoContainer::after { content:'Loka'; position:absolute; bottom:8px; left:8px; padding:3px 8px; border-radius:4px; background:#101820bb; color:#eee; font-size:11px; }
+.presentationMode .previewVideoContainer:nth-of-type(2)::after { content:'You'; }
+.viewActions button:disabled { opacity:.6; cursor:default; }
+.gridMode .selfViewContainer .previewVideoContainer { min-height:0; }
+@media(max-width:800px) { .presentationMode .videoContainer { grid-template-columns:1fr; } .presentationMode .selfViewContainer { grid-column:1; grid-row:4; overflow:visible; } }
+
+.videoContainer { grid-template-rows:24px minmax(0,1fr) minmax(76px,auto); }
+@media(max-width:800px) { .videoContainer { grid-template-rows:32px minmax(240px,45dvh) minmax(76px,auto) auto; } }
+
+/* Caption length never changes the video allocation. */
+.videoContainer { grid-template-rows:24px minmax(0,1fr) 88px; }
+@media(max-width:800px) { .videoContainer { grid-template-rows:32px minmax(240px,45dvh) 88px auto; } }
+
+/* Anchor the name to its own tile, independent of caption height. */
+.mainVideoContainer > .replicaLabel { position:absolute; left:0; bottom:0; top:auto; margin:0; z-index:10; border-radius:0 8px 0 0; }
+@media(max-width:800px) { .mainVideoContainer > .replicaLabel { display:flex; } }
