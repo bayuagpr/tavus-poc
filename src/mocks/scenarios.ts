@@ -23,6 +23,9 @@ export type EndScenario = (typeof END_SCENARIOS)[number];
 export type FeedbackScenario = (typeof FEEDBACK_SCENARIOS)[number];
 
 export interface TutorMockScenario {
+  booking: 'success' | 'empty' | 'unavailable' | 'network-error';
+  availability: 'success' | 'empty' | 'unavailable';
+  cancel: 'success' | 'cutoff' | 'not-found' | 'unavailable';
   start: StartScenario;
   end: EndScenario;
   feedback: FeedbackScenario;
@@ -31,6 +34,7 @@ export interface TutorMockScenario {
 }
 
 export const DEFAULT_TUTOR_MOCK_SCENARIO: TutorMockScenario = {
+  booking: 'success', availability: 'success', cancel: 'success',
   start: 'success',
   end: 'success',
   feedback: 'success',
@@ -60,6 +64,8 @@ export interface TutorMockStore {
   /** Resets counters and derived state, optionally applying a one-off scenario. */
   reset(scenario?: Partial<TutorMockScenario>): void;
   now(): Date;
+  cancelBooking(id: string): void;
+  isBookingCancelled(id: string): boolean;
   nextStartAttempt(): number;
   nextEndAttempt(): number;
   nextFeedbackAttempt(): number;
@@ -109,10 +115,12 @@ export function createTutorMockStore(
   let startAttempts = 0;
   let endAttempts = 0;
   let feedbackAttempts = 0;
+  const cancelledBookings = new Set<string>();
   let sessionEnded = false;
   let feedbackSubmitted = false;
 
   const seed = () => {
+    cancelledBookings.clear();
     startAttempts = 0;
     endAttempts = 0;
     feedbackAttempts = 0;
@@ -138,6 +146,8 @@ export function createTutorMockStore(
     },
 
     now,
+    cancelBooking(id) { cancelledBookings.add(id); },
+    isBookingCancelled(id) { return cancelledBookings.has(id); },
 
     nextStartAttempt() {
       startAttempts += 1;

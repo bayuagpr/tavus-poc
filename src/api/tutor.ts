@@ -4,11 +4,26 @@
  * Contract source (reviewed 2026-11-06):
  * https://api.dev.adroit-lms.com/doc/sse-service/v3/api-docs
  *
- * This module deliberately implements only the three mutations used by the
+ * This module deliberately implements booking reads, cancellation, and mutations used by the
  * session flow. The service does not expose a GET endpoint for a booking's
  * session details, so none is invented here.
  */
 
+export interface TutorBooking {
+ id: string; tenant: string; learnerId: string; courseId: string; slotId: string;
+ month: string; startsAt: string; endsAt: string; status: 'BOOKED' | 'CANCELLED';
+ createdAt: string; cancelledAt: string | null;
+}
+export interface TutorAvailability {
+ slotId: string; startsAt: string; endsAt: string; status: 'AVAILABLE' | 'BOOKED'; eligible: boolean;
+}
+function assertMonth(month: string): void {
+ if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw validationError('Month must use YYYY-MM.', 'month');
+}
+function parseBooking(payload: unknown, status: number): TutorBooking {
+ if (!isRecord(payload) || typeof payload.id !== 'string' || typeof payload.month !== 'string' || !['BOOKED','CANCELLED'].includes(String(payload.status))) throw invalidResponseError(status, 'Unexpected booking response.', payload);
+ return payload as unknown as TutorBooking;
+}
 export interface TutorSessionDetails {
   bookingId: string;
   conversationId: string;
@@ -126,6 +141,9 @@ export interface TutorRequestOptions {
 
 export interface TutorApiClient {
   readonly baseUrl: string;
+  getCurrentBooking(month: string, options?: TutorRequestOptions): Promise<TutorBooking | null>;
+  getAvailability(month: string, options?: TutorRequestOptions): Promise<TutorAvailability[]>;
+  cancelBooking(bookingId: string, options?: TutorRequestOptions): Promise<TutorBooking>;
   startSession(
     bookingId: string,
     options?: TutorRequestOptions
@@ -402,7 +420,8 @@ export function createTutorApiClient(
   async function postJson(
     path: string,
     body: unknown,
-    options?: TutorRequestOptions
+    options?: TutorRequestOptions,
+    method: 'POST' | 'GET' | 'DELETE' = 'POST'
   ): Promise<{ payload: unknown; status: number }> {
     if (options?.signal?.aborted) {
       throw abortError(options.signal.reason);
@@ -431,7 +450,7 @@ export function createTutorApiClient(
       // wrappers are not frozen at client construction time.
       const fetchImpl = config.fetchImpl ?? globalThis.fetch;
       response = await fetchImpl(`${baseUrl}${path}`, {
-        method: 'POST',
+        method,
         headers,
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: options?.signal,
@@ -484,6 +503,24 @@ export function createTutorApiClient(
   return {
     baseUrl,
 
+    async getCurrentBooking(month, options) {
+      assertMonth(month);
+      try { const result = await postJson(`/sse/v1/tutor/bookings/current?month=${encodeURIComponent(month)}`, undefined, options, 'GET'); return parseBooking(result.payload, result.status); }
+      catch (error) { if (isTutorApiError(error) && error.kind === 'http' && error.status === 404) return null; throw error; }
+    },
+    async getAvailability(month, options) {
+      assertMonth(month);
+      const result = await postJson(`/sse/v1/tutor/availability?month=${encodeURIComponent(month)}`, undefined, options, 'GET');
+      // Swagger describes a list but types 200 as one object. Accept either documented shape.
+      const rows = Array.isArray(result.payload) ? result.payload : [result.payload];
+      if (!rows.every(row => isRecord(row) && typeof row.slotId === 'string' && typeof row.startsAt === 'string' && typeof row.endsAt === 'string' && typeof row.eligible === 'boolean' && ['AVAILABLE','BOOKED'].includes(String(row.status)))) throw invalidResponseError(result.status, 'Unexpected availability response.', result.payload);
+      return rows as TutorAvailability[];
+    },
+    async cancelBooking(bookingId, options) {
+      assertBookingId(bookingId);
+      const result = await postJson(`/sse/v1/tutor/bookings/${encodeURIComponent(bookingId)}`, undefined, options, 'DELETE');
+      return parseBooking(result.payload, result.status);
+    },
     async startSession(bookingId, options) {
       assertBookingId(bookingId);
       const result = await postJson(

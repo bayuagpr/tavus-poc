@@ -1,11 +1,12 @@
+import { tutorSample } from '@/fixtures/tutor';
 import type {
   TutorSessionDetails,
   TutorSessionFeedback,
 } from '@/api/tutor';
 
 /** Fixed default clock so generated session times are reproducible. */
-export const MOCK_NOW = '2027-03-05T02:00:00.000Z';
-export const MOCK_BOOKING_ID = 'booking-demo-0001';
+export const MOCK_NOW = tutorSample.now;
+export const MOCK_BOOKING_ID = tutorSample.bookingId;
 export const MOCK_TENANT = 'tenant-demo';
 export const MOCK_LEARNER_ID = 'learner-demo';
 export const MOCK_SESSION_DURATION_MS = 10 * 60 * 1000;

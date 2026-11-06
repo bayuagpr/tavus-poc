@@ -10,6 +10,10 @@ const tutorSessions = [...tutorRoot, 'session'] as const;
 
 export const tutorQueryKeys = {
   all: tutorRoot,
+  bookings: () => [...tutorRoot, 'booking'] as const,
+  currentBooking: (month: string) => [...tutorRoot, 'booking', month] as const,
+  availabilityRoot: () => [...tutorRoot, 'availability'] as const,
+  availability: (month: string) => [...tutorRoot, 'availability', month] as const,
   sessions: () => tutorSessions,
   session: (bookingId: string) =>
     [...tutorSessions, bookingId] as const,
